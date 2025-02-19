@@ -3,6 +3,7 @@ package com.example.p4w1.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.p4w1.data.AppDatabase
 import com.example.p4w1.data.DataEntity
@@ -15,6 +16,9 @@ import com.example.p4w1.data.JenisPenyakit
 class DataViewModel(application: Application) : AndroidViewModel(application) {
     private val dao = AppDatabase.getDatabase(application).dataDao()
     val dataList: LiveData<List<DataEntity>> = dao.getAll()
+
+    private val _rowCount = MutableLiveData(0)
+    val rowCount: LiveData<Int> = _rowCount
 
     fun insertData(
         kodeProvinsi: String,
@@ -59,6 +63,12 @@ class DataViewModel(application: Application) : AndroidViewModel(application) {
     fun deleteData(data: DataEntity) {
         viewModelScope.launch {
             dao.delete(data)
+        }
+    }
+
+    fun fetchRowCount() {
+        viewModelScope.launch {
+            _rowCount.value = dao.getRowCount()
         }
     }
 }

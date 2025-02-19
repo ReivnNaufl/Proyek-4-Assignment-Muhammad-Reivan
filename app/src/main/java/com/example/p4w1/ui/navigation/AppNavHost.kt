@@ -10,8 +10,10 @@ import com.example.p4w1.ui.screen.data_entry.DataEntryScreen
 import com.example.p4w1.ui.screen.data_list.DataListScreen
 import com.example.p4w1.ui.screen.edit.EditScreen
 import com.example.p4w1.viewmodel.DataViewModel
+import com.example.p4w1.viewmodel.ProfileViewModel
+
 @Composable
-fun AppNavHost(viewModel: DataViewModel) {
+fun AppNavHost(viewModel: DataViewModel, viewModelProfile: ProfileViewModel) {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "form") {

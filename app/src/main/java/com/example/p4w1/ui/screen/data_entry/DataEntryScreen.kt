@@ -30,6 +30,7 @@ import androidx.navigation.NavHostController
 import com.example.p4w1.viewmodel.DataViewModel
 import com.example.p4w1.data.JenisPenyakit
 import com.example.p4w1.data.Satuan
+import com.example.p4w1.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -189,20 +190,10 @@ fun DataEntryScreen(navController: NavHostController, viewModel: DataViewModel) 
                                 "Data berhasil ditambahkan!",
                                 Toast.LENGTH_SHORT
                             ).show()
-                            // Navigasi ke tampilan daftar data
-                            navController.navigate("list")
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("Submit Data")
-                    }
-                    Button(
-                        onClick = {
-                            navController.navigate("list")
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("View Data")
                     }
                 }
             }

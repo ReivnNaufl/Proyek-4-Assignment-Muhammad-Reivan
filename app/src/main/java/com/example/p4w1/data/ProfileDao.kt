@@ -20,4 +20,7 @@ interface ProfileDao {
 
     @Delete
     suspend fun delete(data: DataProfile)
+
+    @Query("SELECT * FROM data_profile WHERE id = 1 LIMIT 1")
+    suspend fun getProfile(): DataProfile?
 }

@@ -2,9 +2,8 @@ package com.example.p4w1.ui.navigation
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
-    object Cart : Screen("cart")
+    object DataEntry : Screen("data_entry")
+    object DataList : Screen("data_list")
     object Profile : Screen("profile")
-    object DetailReward : Screen("home/{rewardId}") {
-        fun createRoute(rewardId: Long) = "home/$rewardId"
-    }
+    object EditData : Screen("edit")
 }

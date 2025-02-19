@@ -4,10 +4,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "data_profile")
-class DataProfile (
-    @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val username: String,
-    val uid: String,
-    val email: String
+data class DataProfile (
+    @PrimaryKey val id: Int = 1,
+    var username: String = "Muhammad Reivan Naufal Mufid",
+    var uid: String = "231511021",
+    var email: String = "muhammad.reivan.tif23@polban.ac.id"
 )
