@@ -1,4 +1,4 @@
-package com.example.p4w1.ui
+package com.example.p4w1.ui.screen.data_entry
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
@@ -20,14 +20,12 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.Icon
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.example.p4w1.viewmodel.DataViewModel
 import com.example.p4w1.data.JenisPenyakit

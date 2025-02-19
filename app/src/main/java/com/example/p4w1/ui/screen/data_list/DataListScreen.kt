@@ -1,4 +1,4 @@
-package com.example.p4w1.ui
+package com.example.p4w1.ui.screen.data_list
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
