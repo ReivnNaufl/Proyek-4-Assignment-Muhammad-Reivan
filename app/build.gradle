@@ -42,7 +42,7 @@ dependencies {
     // Core libraries
     implementation libs.androidx.core.ktx.v1101
     implementation libs.androidx.lifecycle.runtime.ktx.v261
-    implementation libs.androidx.activity.compose.v172
+    implementation libs.androidx.activity.compose
 
     // Jetpack Compose & Material3
     implementation libs.ui
