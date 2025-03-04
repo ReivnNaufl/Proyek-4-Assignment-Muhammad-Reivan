@@ -12,18 +12,22 @@ import androidx.navigation.compose.rememberNavController
 import com.example.p4w1.ui.navigation.AppNavHost
 import com.example.p4w1.ui.theme.P4W1Theme
 import com.example.p4w1.viewmodel.DataViewModel
+import com.example.p4w1.viewmodel.ImageViewModel
 import com.example.p4w1.viewmodel.ProfileViewModel
 
 class MainActivity : ComponentActivity() {
     private val viewModel: DataViewModel by viewModels()
     private val profileViewModel: ProfileViewModel by viewModels()
+    private val imgViewModel: ImageViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             P4W1Theme {
                 MainApp(viewModel = viewModel,
-                    profileViewModel = profileViewModel
+                    profileViewModel = profileViewModel,
+                    imgViewModel = imgViewModel,
+                    context = applicationContext
                 )
             }
         }

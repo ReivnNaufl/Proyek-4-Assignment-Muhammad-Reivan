@@ -12,7 +12,7 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.R
+import androidx.compose.material3.*
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,13 +39,16 @@ import com.example.p4w1.ui.screen.home.HomeScreen
 import com.example.p4w1.ui.screen.home.ProfileScreen
 import com.example.p4w1.viewmodel.DataViewModel
 import com.example.p4w1.viewmodel.ProfileViewModel
+import com.example.p4w1.viewmodel.ImageViewModel
 
 @Composable
 fun MainApp(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     viewModel: DataViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    imgViewModel: ImageViewModel,
+    context: Context
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -79,7 +82,7 @@ fun MainApp(
                 HomeScreen(navController = navController, viewModel = viewModel)
             }
             composable(Screen.Profile.route){
-                ProfileScreen(navController = navController, viewModel = profileViewModel, )
+                ProfileScreen(navController = navController, viewModel = profileViewModel, imgViewModel = imgViewModel, context = context)
             }
         }
     }

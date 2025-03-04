@@ -185,6 +185,13 @@ fun DataEntryScreen(navController: NavHostController, viewModel: DataViewModel) 
                                 satuan = selectedSatuan,
                                 tahun = tahun
                             )
+                            kodeProvinsi = ""
+                            namaProvinsi = ""
+                            kodeKabupatenKota = ""
+                            namaKabupatenKota = ""
+                            selectedPenyakit = JenisPenyakit.AIDS
+                            total = ""
+                            tahun = ""
                             Toast.makeText(
                                 context,
                                 "Data berhasil ditambahkan!",

@@ -1,5 +1,10 @@
 package com.example.p4w1.ui.screen.home
 
+import android.content.Context
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -28,17 +33,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.p4w1.data.DataProfile
-import com.example.p4w1.viewmodel.DataViewModel
+import coil.compose.AsyncImage
 import com.example.p4w1.viewmodel.ProfileViewModel
+import java.io.File
+import com.example.p4w1.viewmodel.ImageViewModel
+import com.example.p4w1.data.ProfileImage
 
 @Composable
 fun ProfileScreen(
     navController: NavHostController,
     viewModel: ProfileViewModel,
+    imgViewModel: ImageViewModel,
+    context: Context,
     modifier: Modifier = Modifier) {
     var isEditing by remember { mutableStateOf(false) }
     val profile by viewModel.profileStateFlow.collectAsState()
@@ -48,6 +59,20 @@ fun ProfileScreen(
     var studentEmail by rememberSaveable { mutableStateOf(profile?.email ?: "muhammad.reivan.tif23@gmail.com") }
     var profileUploaded by remember { mutableStateOf(false) }
 
+    var profileImage by remember { mutableStateOf<ProfileImage?>(null) }
+
+    // Image Picker Launcher
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            imgViewModel.updateProfileImage(context, it) // Save image & update Room
+            imgViewModel.getProfileImage(context) { updatedImage ->
+                profileImage = updatedImage // Update UI
+            }
+        }
+    }
+
     // Update fields when profile changes
     LaunchedEffect(profile) {
         profile?.let {
@@ -55,6 +80,10 @@ fun ProfileScreen(
             studentId = it.uid
             studentEmail = it.email
         }
+    }
+
+    LaunchedEffect(Unit) {
+        imgViewModel.getProfileImage(context) { profileImage = it }
     }
 
     if (profile == null) {
@@ -73,20 +102,7 @@ fun ProfileScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             // Profile Image Section (simulated upload)
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                    .background(Color.LightGray, CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = if (profileUploaded) "Uploaded Profile Picture" else "Default Profile Picture",
-                    tint = if (profileUploaded) MaterialTheme.colorScheme.onPrimary else Color.Gray,
-                    modifier = Modifier.size(80.dp)
-                )
-            }
+            ProfileImage(profileImage?.imgURI)
             Spacer(modifier = Modifier.height(16.dp))
 
             if (isEditing) {
@@ -114,7 +130,7 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 // Simulated upload button for the profile photo.
                 Button(
-                    onClick = { profileUploaded = true },
+                    onClick = { imagePickerLauncher.launch("image/*")},
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Upload Photo")
@@ -160,3 +176,35 @@ fun ProfileScreen(
         }
     }
 }
+
+@Composable
+fun ProfileImage(imgURI: String?) {
+    Box(
+        modifier = Modifier
+            .size(120.dp)
+            .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+            .background(Color.LightGray, CircleShape),
+        contentAlignment = Alignment.Center
+    ) {
+        if (imgURI.isNullOrEmpty()) {
+            // Default icon if no image is set
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = "Default Profile Picture",
+                tint = Color.Gray,
+                modifier = Modifier.size(80.dp)
+            )
+        } else {
+            AsyncImage(
+                model = File(imgURI), // Load saved image from storage
+                contentDescription = "Profile Picture",
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape) // Crop to a circle
+                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape), // Add border
+                contentScale = ContentScale.Crop // Scale and center the image
+            )
+        }
+    }
+}
+
