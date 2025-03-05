@@ -11,8 +11,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.p4w1.viewmodel.DataViewModel
@@ -24,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: DataViewModel){
@@ -57,11 +54,11 @@ fun HomeScreen(navController: NavHostController, viewModel: DataViewModel){
             Spacer(modifier = Modifier.height(26.dp))
             Text(
                 text = buildAnnotatedString {
-                    append("Made with ")
+                    append("\t\t  Made with ")
                     withStyle(style = SpanStyle(textDecoration = TextDecoration.LineThrough)) {
                         append("tears and blood")
                     }
-                    append("\tlove and care\nby Muhammad Reivan Naufal Mufid (231511021)")
+                    append(" love and care\nby Muhammad Reivan Naufal Mufid (231511021)")
                 },
                 fontSize = 10.sp
             )

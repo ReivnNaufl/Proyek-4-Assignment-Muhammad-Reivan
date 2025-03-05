@@ -92,8 +92,8 @@ fun ProfileScreen(
             Box(
                 modifier = Modifier
                     .size(120.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray),
+                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                    .background(Color.LightGray, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 if (displayedImage.value != null) {

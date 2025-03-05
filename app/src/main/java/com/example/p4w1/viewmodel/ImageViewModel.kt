@@ -68,5 +68,4 @@ class ImageViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
 }
