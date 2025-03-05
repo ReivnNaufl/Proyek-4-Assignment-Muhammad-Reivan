@@ -61,7 +61,7 @@ fun HomeScreen(navController: NavHostController, viewModel: DataViewModel){
                     withStyle(style = SpanStyle(textDecoration = TextDecoration.LineThrough)) {
                         append("tears and blood")
                     }
-                    append(" love and care\nby Muhammad Reivan Naufal Mufid (231511021)")
+                    append("\tlove and care\nby Muhammad Reivan Naufal Mufid (231511021)")
                 },
                 fontSize = 10.sp
             )

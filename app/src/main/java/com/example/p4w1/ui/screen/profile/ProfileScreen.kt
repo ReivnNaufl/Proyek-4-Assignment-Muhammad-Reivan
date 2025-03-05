@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,9 +37,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.example.p4w1.viewmodel.ProfileViewModel
 import java.io.File
 import com.example.p4w1.viewmodel.ImageViewModel
@@ -49,28 +52,30 @@ fun ProfileScreen(
     navController: NavHostController,
     viewModel: ProfileViewModel,
     imgViewModel: ImageViewModel,
-    context: Context,
-    modifier: Modifier = Modifier) {
-    var isEditing by remember { mutableStateOf(false) }
+    modifier: Modifier = Modifier
+) {
     val profile by viewModel.profileStateFlow.collectAsState()
-
     var studentName by rememberSaveable { mutableStateOf(profile?.username ?: "Muhammad Reivan Naufal Mufid") }
     var studentId by rememberSaveable { mutableStateOf(profile?.uid ?: "231511021") }
     var studentEmail by rememberSaveable { mutableStateOf(profile?.email ?: "muhammad.reivan.tif23@gmail.com") }
-    var profileUploaded by remember { mutableStateOf(false) }
 
-    var profileImage by remember { mutableStateOf<ProfileImage?>(null) }
+    val profileImage by imgViewModel.profileImage.collectAsState()
+    val context = LocalContext.current
 
-    // Image Picker Launcher
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var isEditing by rememberSaveable { mutableStateOf(false) }
+
+    // 🔥 Force recompose when image updates
+    val displayedImage = remember { derivedStateOf { selectedImageUri ?: profileImage?.let { Uri.fromFile(File(it)) } } }
+
+    LaunchedEffect(Unit) {
+        imgViewModel.getProfileImage() // Load saved image
+    }
+
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        uri?.let {
-            imgViewModel.updateProfileImage(context, it) // Save image & update Room
-            imgViewModel.getProfileImage(context) { updatedImage ->
-                profileImage = updatedImage // Update UI
-            }
-        }
+        selectedImageUri = uri // Update instantly in UI
     }
 
     // Update fields when profile changes
@@ -82,27 +87,32 @@ fun ProfileScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        imgViewModel.getProfileImage(context) { profileImage = it }
-    }
+    Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.TopCenter) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray),
+                contentAlignment = Alignment.Center
+            ) {
+                if (displayedImage.value != null) {
+                    AsyncImage(
+                        model = displayedImage.value,
+                        contentDescription = "Profile Picture",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.size(120.dp).clip(CircleShape)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Default Profile Picture",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(80.dp)
+                    )
+                }
+            }
 
-    if (profile == null) {
-        Text("Loading profile...", modifier = Modifier.padding(16.dp))
-        return
-    }
-
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            // Profile Image Section (simulated upload)
-            ProfileImage(profileImage?.imgURI)
             Spacer(modifier = Modifier.height(16.dp))
 
             if (isEditing) {
@@ -128,21 +138,22 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                // Simulated upload button for the profile photo.
-                Button(
-                    onClick = { imagePickerLauncher.launch("image/*")},
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                // Edit button to switch to edit mode.
+                Button(onClick = { imagePickerLauncher.launch("image/*") }, modifier = Modifier.fillMaxWidth()) {
                     Text("Upload Photo")
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                // Save button to exit edit mode.
+
                 Button(
                     onClick = {
+                        selectedImageUri?.let { uri ->
+                            imgViewModel.saveImage(context, uri) // Save to Room
+                            imgViewModel.getProfileImage() // Force refresh
+                        }
+
                         val updatedData = profile!!.copy(username = studentName, uid = studentId, email = studentEmail)
+                        viewModel.updateData(updatedData)
 
                         isEditing = false
-                        viewModel.updateData(updatedData)
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -165,46 +176,10 @@ fun ProfileScreen(
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                // Edit button to switch to edit mode.
-                Button(
-                    onClick = { isEditing = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Button(onClick = { isEditing = true }, modifier = Modifier.fillMaxWidth()) {
                     Text("Edit Profile")
                 }
             }
         }
     }
 }
-
-@Composable
-fun ProfileImage(imgURI: String?) {
-    Box(
-        modifier = Modifier
-            .size(120.dp)
-            .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-            .background(Color.LightGray, CircleShape),
-        contentAlignment = Alignment.Center
-    ) {
-        if (imgURI.isNullOrEmpty()) {
-            // Default icon if no image is set
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "Default Profile Picture",
-                tint = Color.Gray,
-                modifier = Modifier.size(80.dp)
-            )
-        } else {
-            AsyncImage(
-                model = File(imgURI), // Load saved image from storage
-                contentDescription = "Profile Picture",
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape) // Crop to a circle
-                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape), // Add border
-                contentScale = ContentScale.Crop // Scale and center the image
-            )
-        }
-    }
-}
-

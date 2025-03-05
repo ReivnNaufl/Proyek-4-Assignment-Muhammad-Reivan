@@ -82,7 +82,7 @@ fun MainApp(
                 HomeScreen(navController = navController, viewModel = viewModel)
             }
             composable(Screen.Profile.route){
-                ProfileScreen(navController = navController, viewModel = profileViewModel, imgViewModel = imgViewModel, context = context)
+                ProfileScreen(navController = navController, viewModel = profileViewModel, imgViewModel = imgViewModel)
             }
         }
     }

@@ -5,16 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.p4w1.ui.navigation.AppNavHost
 import com.example.p4w1.ui.screen.splashscreen.SplashScreen
 import com.example.p4w1.ui.theme.P4W1Theme
 import com.example.p4w1.viewmodel.DataViewModel
