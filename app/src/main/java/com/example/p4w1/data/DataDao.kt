@@ -1,6 +1,7 @@
 package com.example.p4w1.data
 
 import androidx.lifecycle.LiveData
+import androidx.paging.PagingSource
 import androidx.room.*
 
 @Dao
@@ -23,4 +24,10 @@ interface DataDao {
 
     @Query("SELECT COUNT(*) FROM data_table")
     suspend fun getRowCount(): Int
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(diseaseList: List<DataEntity>)
+
+    @Query("SELECT * FROM data_table ORDER BY id ASC")
+    fun getPaginatedData(): PagingSource<Int, DataEntity>
 }

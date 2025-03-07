@@ -1,10 +1,18 @@
 package com.example.p4w1.viewmodel
 
+import DiseaseCase
 import android.app.Application
+import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.cachedIn
 import com.example.p4w1.data.AppDatabase
 import com.example.p4w1.data.DataEntity
 import kotlinx.coroutines.Dispatchers
@@ -15,10 +23,50 @@ import com.example.p4w1.data.JenisPenyakit
 
 class DataViewModel(application: Application) : AndroidViewModel(application) {
     private val dao = AppDatabase.getDatabase(application).dataDao()
-    val dataList: LiveData<List<DataEntity>> = dao.getAll()
 
     private val _rowCount = MutableLiveData(0)
     val rowCount: LiveData<Int> = _rowCount
+
+
+    private val _isLoading = MutableLiveData(false)
+    val isLoading: LiveData<Boolean> = _isLoading
+
+    fun fetchDataAndInsert() {
+        viewModelScope.launch {
+            _isLoading.value = true  // Show loading
+            try {
+                val response = RetrofitClient.apiService.getDiseaseData()
+                if (response.error == 0) {
+                    val diseaseEntities = response.data.map { disease ->
+                        DataEntity(
+                            kodeProvinsi = disease.kode_provinsi.toString(),
+                            namaProvinsi = disease.nama_provinsi,
+                            kodeKabupatenKota = disease.kode_kabupaten_kota.toString(),
+                            namaKabupatenKota = disease.nama_kabupaten_kota,
+                            jenisPenyakit = mapToJenisPenyakit(disease.jenis_penyakit ?: ""),
+                            total = disease.jumlah_kasus,
+                            satuan = Satuan.valueOf(disease.satuan),
+                            tahun = disease.tahun
+                        )
+                    }
+                    dao.insertAll(diseaseEntities)
+                }
+            } catch (e: Exception) {
+                Log.e("API_ERROR", "Failed to fetch data: ${e.localizedMessage}")
+            } finally {
+                _isLoading.value = false
+                fetchRowCount()
+            }
+        }
+    }
+
+    private fun mapToJenisPenyakit(name: String): JenisPenyakit {
+        return JenisPenyakit.values().find { it.displayName.equals(name, ignoreCase = true) }
+            ?: JenisPenyakit.AIDS // Default value to prevent crashes
+    }
+
+    var errorMessage = mutableStateOf<String?>(null)
+        private set
 
     fun insertData(
         kodeProvinsi: String,
@@ -68,7 +116,19 @@ class DataViewModel(application: Application) : AndroidViewModel(application) {
 
     fun fetchRowCount() {
         viewModelScope.launch {
-            _rowCount.value = dao.getRowCount()
+            val count = dao.getRowCount()
+            _rowCount.postValue(count)
         }
     }
+
+
+    private val pager = Pager(
+        config = PagingConfig(
+            pageSize = 20, // Number of items per page
+            enablePlaceholders = false
+        ),
+        pagingSourceFactory = { dao.getPaginatedData() }
+    )
+
+    val pagedData = pager.flow.cachedIn(viewModelScope)
 }

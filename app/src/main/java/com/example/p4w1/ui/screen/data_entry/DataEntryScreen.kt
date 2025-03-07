@@ -21,8 +21,13 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -70,7 +75,8 @@ fun DataEntryScreen(navController: NavHostController, viewModel: DataViewModel) 
         ) {
             Text(
                 text = "Input Data",
-                style = MaterialTheme.typography.headlineMedium
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
             )
             OutlinedTextField(
                 value = kodeProvinsi,
@@ -102,19 +108,20 @@ fun DataEntryScreen(navController: NavHostController, viewModel: DataViewModel) 
                 modifier = Modifier
                     .fillMaxWidth()
                     .onGloballyPositioned { coordinates ->
-                        // This value is used to assign to
-                        // the DropDown the same width
                         pTextFieldSize = coordinates.size.toSize()
                     },
-                label = {Text("Label")},
+                label = {Text("Jenis Penyakit")},
                 trailingIcon = {
                     Icon(pIcon,"contentDescription",
                         Modifier.clickable { expandedPenyakit = !expandedPenyakit })
-                }
+                },
+                readOnly = true,
+                enabled = true
             )
             DropdownMenu(
                 expanded = expandedPenyakit,
-                onDismissRequest = { expandedPenyakit = false }
+                onDismissRequest = { expandedPenyakit = false },
+                modifier = Modifier.width(with(LocalDensity.current){pTextFieldSize.width.toDp()})
             ) {
                 JenisPenyakit.values().forEach { option ->
                     DropdownMenuItem(
@@ -126,8 +133,6 @@ fun DataEntryScreen(navController: NavHostController, viewModel: DataViewModel) 
                     )
                 }
             }
-
-
                 OutlinedTextField(
                     value = total,
                     onValueChange = { total = it },
@@ -145,15 +150,18 @@ fun DataEntryScreen(navController: NavHostController, viewModel: DataViewModel) 
                             // the DropDown the same width
                             sTextFieldSize = coordinates.size.toSize()
                         },
-                    label = {Text("Label")},
+                    label = {Text("Satuan")},
                     trailingIcon = {
                         Icon(sIcon,"contentDescription",
-                            Modifier.clickable { expandedSatuan = !expandedSatuan })
-                    }
+                            tint = Color(0xFF313237)
+                        )
+                    },
+                    enabled = false
                 )
                 DropdownMenu(
-                    expanded = expandedSatuan,
-                    onDismissRequest = { expandedSatuan = false }
+                    expanded = false,
+                    onDismissRequest = { expandedSatuan = false },
+                    modifier = Modifier.width(with(LocalDensity.current){sTextFieldSize.width.toDp()})
                 ) {
                     Satuan.values().forEach { option ->
                         DropdownMenuItem(

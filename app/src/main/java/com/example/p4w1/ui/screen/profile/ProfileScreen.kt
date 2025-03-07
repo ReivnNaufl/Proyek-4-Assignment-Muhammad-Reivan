@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -65,7 +66,6 @@ fun ProfileScreen(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var isEditing by rememberSaveable { mutableStateOf(false) }
 
-    // 🔥 Force recompose when image updates
     val displayedImage = remember { derivedStateOf { selectedImageUri ?: profileImage?.let { Uri.fromFile(File(it)) } } }
 
     LaunchedEffect(Unit) {
@@ -78,7 +78,6 @@ fun ProfileScreen(
         selectedImageUri = uri // Update instantly in UI
     }
 
-    // Update fields when profile changes
     LaunchedEffect(profile) {
         profile?.let {
             studentName = it.username
@@ -86,98 +85,119 @@ fun ProfileScreen(
             studentEmail = it.email
         }
     }
-
-    Box(modifier = Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.TopCenter) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
-                    .background(Color.LightGray, CircleShape),
-                contentAlignment = Alignment.Center
+    Column {
+        Text(
+            text = "Profile",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .padding(16.dp)
+        )
+        Box(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                if (displayedImage.value != null) {
-                    AsyncImage(
-                        model = displayedImage.value,
-                        contentDescription = "Profile Picture",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.size(120.dp).clip(CircleShape)
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Default Profile Picture",
-                        tint = Color.Gray,
-                        modifier = Modifier.size(80.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (isEditing) {
-                // Edit mode: Display input fields to modify the student profile.
-                OutlinedTextField(
-                    value = studentName,
-                    onValueChange = { studentName = it },
-                    label = { Text("Student Name") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = studentId,
-                    onValueChange = { studentId = it },
-                    label = { Text("Student ID") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = studentEmail,
-                    onValueChange = { studentEmail = it },
-                    label = { Text("Student Email") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                // Edit button to switch to edit mode.
-                Button(onClick = { imagePickerLauncher.launch("image/*") }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Upload Photo")
-                }
-
-                Button(
-                    onClick = {
-                        selectedImageUri?.let { uri ->
-                            imgViewModel.saveImage(context, uri) // Save to Room
-                            imgViewModel.getProfileImage() // Force refresh
-                        }
-
-                        val updatedData = profile!!.copy(username = studentName, uid = studentId, email = studentEmail)
-                        viewModel.updateData(updatedData)
-
-                        isEditing = false
-                    },
-                    modifier = Modifier.fillMaxWidth()
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                        .background(Color.LightGray, CircleShape),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text("Save")
+                    if (displayedImage.value != null) {
+                        AsyncImage(
+                            model = displayedImage.value,
+                            contentDescription = "Profile Picture",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.size(120.dp).clip(CircleShape)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Default Profile Picture",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(80.dp)
+                        )
+                    }
                 }
-            } else {
-                // Display mode: Show the student's profile details.
-                Text(
-                    text = studentName,
-                    style = MaterialTheme.typography.headlineSmall
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "ID: $studentId",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = studentEmail,
-                    style = MaterialTheme.typography.bodyLarge
-                )
+
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = { isEditing = true }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Edit Profile")
+
+                if (isEditing) {
+                    // Edit mode: Display input fields to modify the student profile.
+                    OutlinedTextField(
+                        value = studentName,
+                        onValueChange = { studentName = it },
+                        label = { Text("Student Name") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = studentId,
+                        onValueChange = { studentId = it },
+                        label = { Text("Student ID") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = studentEmail,
+                        onValueChange = { studentEmail = it },
+                        label = { Text("Student Email") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    // Edit button to switch to edit mode.
+                    Button(
+                        onClick = { imagePickerLauncher.launch("image/*") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Upload Photo")
+                    }
+
+                    Button(
+                        onClick = {
+                            selectedImageUri?.let { uri ->
+                                imgViewModel.saveImage(context, uri) // Save to Room
+                                imgViewModel.getProfileImage() // Force refresh
+                            }
+
+                            val updatedData = profile!!.copy(
+                                username = studentName,
+                                uid = studentId,
+                                email = studentEmail
+                            )
+                            viewModel.updateData(updatedData)
+
+                            isEditing = false
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Save")
+                    }
+                } else {
+                    // Display mode: Show the student's profile details.
+                    Text(
+                        text = studentName,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "ID: $studentId",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = studentEmail,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { isEditing = true }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Edit Profile")
+                    }
                 }
             }
         }

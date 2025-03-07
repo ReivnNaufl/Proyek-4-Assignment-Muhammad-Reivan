@@ -13,6 +13,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.ui.geometry.Size
@@ -198,21 +200,26 @@ fun EditScreen(
                         tahun = tahun.toIntOrNull() ?: 0
                     )
                     viewModel.updateData(updatedData)
+                    kodeProvinsi = ""
+                    namaProvinsi = ""
+                    kodeKabupatenKota = ""
+                    namaKabupatenKota = ""
+                    selectedPenyakit = JenisPenyakit.AIDS
+                    total = ""
+                    tahun = ""
                     Toast.makeText(context, "Data berhasil diupdate!", Toast.LENGTH_SHORT).show()
                     navController.popBackStack()
                 },
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit",
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(text = "Update Data")
-            }
-            Button(
-                onClick = {
-                    navController.navigate("list")
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("View Data")
             }
         }
     }

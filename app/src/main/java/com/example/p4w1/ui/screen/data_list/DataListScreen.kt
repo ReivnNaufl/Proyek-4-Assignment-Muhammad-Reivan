@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,27 +17,36 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavHostController
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.graphics.Color
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.example.p4w1.data.DataEntity
 import com.example.p4w1.viewmodel.DataViewModel
 
 @Composable
 fun DataListScreen(navController: NavHostController, viewModel: DataViewModel) {
-    val dataList by viewModel.dataList.observeAsState(emptyList())
+    val pagedData = viewModel.pagedData.collectAsLazyPagingItems()
+    val pagedItems: LazyPagingItems<DataEntity> = viewModel.pagedData.collectAsLazyPagingItems()
 
-    if (dataList.isEmpty()) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "No Data Available", style = MaterialTheme.typography.headlineMedium)
-        }
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(dataList) { item ->
+    Text(
+        text = "Data List",
+        style = MaterialTheme.typography.headlineMedium,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier
+            .padding(16.dp)
+    )
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 45.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(pagedItems.itemCount) { index ->
+            val item = pagedItems[index]
+            item?.let {
                 Card(
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
@@ -82,6 +94,12 @@ fun DataListScreen(navController: NavHostController, viewModel: DataViewModel) {
                                 },
                                 shape = RoundedCornerShape(8.dp)
                             ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Text(text = "Edit")
                             }
                             Spacer(modifier = Modifier.width(5.dp))
@@ -89,13 +107,33 @@ fun DataListScreen(navController: NavHostController, viewModel: DataViewModel) {
                                 onClick = {
                                     viewModel.deleteData(item)
                                 },
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFFF6B6B)
+                                )
                             ) {
-                                Text(text = "Delete")
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    modifier = Modifier.size(18.dp),
+                                    tint = Color(0xFFE8E8E8)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Delete",
+                                    color = Color(0xFFE8E8E8)
+                                )
                             }
                         }
                     }
                 }
+            }
+        }
+
+        // Loading indicator at the bottom
+        item {
+            if (pagedData.loadState.append is LoadState.Loading) {
+                CircularProgressIndicator(modifier = Modifier.fillMaxWidth().padding(16.dp))
             }
         }
     }
