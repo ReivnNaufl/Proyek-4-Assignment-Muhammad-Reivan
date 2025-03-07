@@ -1,11 +1,15 @@
 package com.example.p4w1.ui.screen.home
 
+import android.os.Build
 import android.util.Log
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -15,6 +19,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -28,8 +33,11 @@ import androidx.navigation.NavHostController
 import com.example.p4w1.viewmodel.DataViewModel
 import kotlinx.coroutines.launch
 
+@RequiresApi(Build.VERSION_CODES.Q)
 @Composable
 fun HomeScreen(navController: NavHostController, viewModel: DataViewModel) {
+    val dataList by viewModel.dataList.observeAsState(initial = emptyList())
+    val context = LocalContext.current
     val rowCount by viewModel.rowCount.observeAsState(0)
     val isLoading by viewModel.isLoading.observeAsState(false)
 
@@ -70,7 +78,9 @@ fun HomeScreen(navController: NavHostController, viewModel: DataViewModel) {
 
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -108,7 +118,8 @@ fun HomeScreen(navController: NavHostController, viewModel: DataViewModel) {
             Button(
                 onClick = { viewModel.fetchDataAndInsert() },
                 enabled = !isLoading,
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
@@ -122,6 +133,39 @@ fun HomeScreen(navController: NavHostController, viewModel: DataViewModel) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(text = "Sync Data With OpenData Jabar")
                 }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    val csvContent = viewModel.convertToCsv(dataList.reversed())
+                    viewModel.saveCsvToDownloads(context, csvContent)
+
+                    Toast.makeText(
+                        context,
+                        "Data successfully exported!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                },
+                enabled = !isLoading,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Icon(imageVector = Icons.Default.Send, contentDescription = "Sync Icon")
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Export To CSV")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    viewModel.exportToExcel(context, dataList.reversed())
+                },
+                enabled = !isLoading,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ){
+                Icon(imageVector = Icons.Default.Send, contentDescription = "Sync Icon")
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Export To XLSX")
             }
         }
     }

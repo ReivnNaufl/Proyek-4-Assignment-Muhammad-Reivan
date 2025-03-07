@@ -185,7 +185,6 @@ fun EditScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = {
                     val updatedData = DataEntity(
