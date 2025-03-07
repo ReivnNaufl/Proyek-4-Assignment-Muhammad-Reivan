@@ -4,6 +4,12 @@ import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,7 +21,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
@@ -35,7 +43,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -85,6 +97,27 @@ fun ProfileScreen(
             studentEmail = it.email
         }
     }
+
+    // Moving Gradient Effect using animated colors
+    val infiniteTransition = rememberInfiniteTransition()
+    val colorPhase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 4000, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+
+// Interpolate colors for smooth blending
+    val gradientBrush = Brush.linearGradient(
+        colors = listOf(
+            lerp(Color(0xFFA67CF2), Color(0xFF5C98F2), colorPhase), // Purple to Blue
+            lerp(Color(0xFF5C98F2), Color(0xFFFF6B8B), colorPhase), // Blue to Red
+            lerp(Color(0xFFFF6B8B), Color(0xFFA67CF2), colorPhase)  // Red to Purple
+        )
+    )
+
     Column {
         Text(
             text = "Profile",
@@ -116,10 +149,27 @@ fun ProfileScreen(
                             modifier = Modifier.size(120.dp).clip(CircleShape)
                         )
                     } else {
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(120.dp) // Adjust size of the icon
+                                .graphicsLayer {
+                                    // You can apply transformations like rotation or scale here
+                                    scaleX = 1f
+                                    scaleY = 1f
+                                }
+                                .drawBehind {
+                                    // Apply the gradient as a background behind the icon
+                                    drawRect(
+                                        brush = gradientBrush,
+                                        size = size
+                                    )
+                                }
+                        )
                         Icon(
                             imageVector = Icons.Default.Person,
                             contentDescription = "Default Profile Picture",
-                            tint = Color.Gray,
+                            tint = Color(0xFF242730),
                             modifier = Modifier.size(80.dp)
                         )
                     }
