@@ -1,5 +1,6 @@
 package com.example.p4w1.ui.screen.data_list
 
+import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -7,10 +8,13 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -45,8 +49,23 @@ fun DataListScreen(navController: NavHostController, viewModel: DataViewModel) {
     var showDialog by remember { mutableStateOf(false) }
     var itemToDelete by remember { mutableStateOf<DataEntity?>(null) }
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+
+    // Log scroll events
+    LaunchedEffect(pagedItems) {
+        snapshotFlow { pagedItems.loadState.append }
+            .collect { loadState ->
+                Log.d("DataListScreen", "Append load state: $loadState")
+            }
+    }
+
+
     GradientBackgroundScreen {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(0.dp)
+        ) {
+            // Search Bar
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -66,19 +85,20 @@ fun DataListScreen(navController: NavHostController, viewModel: DataViewModel) {
                 placeholder = { Text("Search by kabupaten/kota...") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(0.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFF1A1A1A),  // Dark background when focused
-                    unfocusedContainerColor = Color(0xFF232323), // Darker gray when not focused
-                    disabledContainerColor = Color(0xFF121212)  // Even darker when disabled
+                    focusedContainerColor = Color(0xFF1A1A1A),
+                    unfocusedContainerColor = Color(0xFF232323),
+                    disabledContainerColor = Color(0xFF121212)
                 )
             )
 
+            // Filtered Items
             val filteredItems = pagedItems.itemSnapshotList.items.filter {
                 it.namaKabupatenKota.contains(searchQuery.text, ignoreCase = true)
             }
 
-            // **Show message if no data is found**
+            // Show message if no data is found
             if (filteredItems.isEmpty()) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -115,91 +135,98 @@ fun DataListScreen(navController: NavHostController, viewModel: DataViewModel) {
                     }
                 }
             } else {
+                // LazyColumn for the list
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 0.dp),
+                        .weight(1f)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(
                         filteredItems,
                         key = { item -> item.id }
                     ) { item ->
-                        Card(
-                            shape = RoundedCornerShape(12.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.surface)
-                                    .padding(16.dp)
+                        if (item != null) {
+                            Card(
+                                shape = RoundedCornerShape(12.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text(
-                                    text = "Provinsi: ${item.namaProvinsi} (${item.kodeProvinsi})",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Kabupaten/Kota: ${item.namaKabupatenKota} (${item.kodeKabupatenKota})",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Jenis Penyakit: ${item.jenisPenyakit.displayName}",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Total: ${item.total} ${item.satuan.displayName}",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Tahun: ${item.tahun}",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End,
-                                    verticalAlignment = Alignment.CenterVertically
+                                Column(
+                                    modifier = Modifier
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .padding(16.dp)
                                 ) {
-                                    Button(
-                                        onClick = { navController.navigate("edit/${item.id}") },
-                                        shape = RoundedCornerShape(8.dp)
+                                    // Item details
+                                    Text(
+                                        text = "Provinsi: ${item.namaProvinsi} (${item.kodeProvinsi})",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Kabupaten/Kota: ${item.namaKabupatenKota} (${item.kodeKabupatenKota})",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Jenis Penyakit: ${item.jenisPenyakit.displayName}",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Total: ${item.total} ${item.satuan.displayName}",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Tahun: ${item.tahun}",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.End,
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Edit,
-                                            contentDescription = "Edit",
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(text = "Edit")
-                                    }
-                                    Spacer(modifier = Modifier.width(5.dp))
-                                    Button(
-                                        onClick = {
-                                            itemToDelete = item
-                                            showDialog = true
-                                        },
-                                        shape = RoundedCornerShape(8.dp),
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(0xFFFF6B6B)
-                                        )
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Delete,
-                                            contentDescription = "Delete",
-                                            modifier = Modifier.size(18.dp),
-                                            tint = Color(0xFFE8E8E8)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = "Delete",
-                                            color = Color(0xFFE8E8E8)
-                                        )
+                                        // Edit Button
+                                        Button(
+                                            onClick = { navController.navigate("edit/${item.id}") },
+                                            shape = RoundedCornerShape(8.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Edit,
+                                                contentDescription = "Edit",
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(text = "Edit")
+                                        }
+                                        Spacer(modifier = Modifier.width(5.dp))
+                                        // Delete Button
+                                        Button(
+                                            onClick = {
+                                                itemToDelete = item
+                                                showDialog = true
+                                            },
+                                            shape = RoundedCornerShape(8.dp),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color(0xFFFF6B6B)
+                                            )
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Delete,
+                                                contentDescription = "Delete",
+                                                modifier = Modifier.size(18.dp),
+                                                tint = Color(0xFFE8E8E8)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "Delete",
+                                                color = Color(0xFFE8E8E8)
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -210,6 +237,7 @@ fun DataListScreen(navController: NavHostController, viewModel: DataViewModel) {
         }
     }
 
+    // Delete Confirmation Dialog
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
@@ -233,7 +261,6 @@ fun DataListScreen(navController: NavHostController, viewModel: DataViewModel) {
         )
     }
 }
-
 @Composable
 fun GradientBackgroundScreen(content: @Composable () -> Unit) {
     // Moving Gradient Effect using animated colors

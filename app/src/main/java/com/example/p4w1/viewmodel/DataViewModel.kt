@@ -15,6 +15,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.cachedIn
 import com.example.p4w1.data.AppDatabase
 import com.example.p4w1.data.DataEntity
+import com.example.p4w1.data.DataPagingSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -124,8 +125,8 @@ class DataViewModel(application: Application) : AndroidViewModel(application) {
 
     private val pager = Pager(
         config = PagingConfig(
-            pageSize = 20, // Number of items per page
-            enablePlaceholders = false
+            pageSize = 1000,
+            enablePlaceholders = true,
         ),
         pagingSourceFactory = { dao.getPaginatedData() }
     )

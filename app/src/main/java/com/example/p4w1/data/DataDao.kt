@@ -16,6 +16,9 @@ interface DataDao {
     @Query("SELECT * FROM data_table ORDER BY id DESC")
     fun getAll(): LiveData<List<DataEntity>>
 
+    @Query("SELECT * FROM data_table ORDER BY id DESC")
+    fun getAllData(): List<DataEntity>
+
     @Query("SELECT * FROM data_table WHERE id = :dataId")
     suspend fun getById(dataId: Int): DataEntity?
 
@@ -30,4 +33,8 @@ interface DataDao {
 
     @Query("SELECT * FROM data_table ORDER BY id ASC")
     fun getPaginatedData(): PagingSource<Int, DataEntity>
+
+
+    @Query("SELECT * FROM data_table ORDER BY id ASC LIMIT :limit OFFSET :offset")
+    suspend fun loadPage(offset: Int, limit: Int): List<DataEntity>
 }
