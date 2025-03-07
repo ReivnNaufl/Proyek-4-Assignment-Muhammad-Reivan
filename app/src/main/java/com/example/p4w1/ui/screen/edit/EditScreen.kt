@@ -218,7 +218,6 @@ fun EditScreen(
                     contentDescription = "Edit",
                     modifier = Modifier.size(18.dp)
                 )
-                Spacer(modifier = Modifier.width(4.dp))
                 Text(text = "Update Data")
             }
         }

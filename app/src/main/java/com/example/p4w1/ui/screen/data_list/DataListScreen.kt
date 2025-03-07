@@ -23,11 +23,17 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.p4w1.data.DataEntity
 import com.example.p4w1.viewmodel.DataViewModel
+import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 
 @Composable
 fun DataListScreen(navController: NavHostController, viewModel: DataViewModel) {
     val pagedData = viewModel.pagedData.collectAsLazyPagingItems()
     val pagedItems: LazyPagingItems<DataEntity> = viewModel.pagedData.collectAsLazyPagingItems()
+
+    var showDialog by remember { mutableStateOf(false) }
+    var itemToDelete by remember { mutableStateOf<DataEntity?>(null) }
 
     Text(
         text = "Data List",
@@ -105,7 +111,8 @@ fun DataListScreen(navController: NavHostController, viewModel: DataViewModel) {
                             Spacer(modifier = Modifier.width(5.dp))
                             Button(
                                 onClick = {
-                                    viewModel.deleteData(item)
+                                    itemToDelete = item
+                                    showDialog = true
                                 },
                                 shape = RoundedCornerShape(8.dp),
                                 colors = ButtonDefaults.buttonColors(
@@ -136,5 +143,28 @@ fun DataListScreen(navController: NavHostController, viewModel: DataViewModel) {
                 CircularProgressIndicator(modifier = Modifier.fillMaxWidth().padding(16.dp))
             }
         }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Confirm Data Deletion") },
+            text = { Text("Are you sure you want to delete this item? This action cannot be reversed.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        itemToDelete?.let { viewModel.deleteData(it) }
+                        showDialog = false
+                    }
+                ) {
+                    Text("Delete", color = Color(0xFFFF6B6B))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
